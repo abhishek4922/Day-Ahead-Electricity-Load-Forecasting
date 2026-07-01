@@ -14,43 +14,32 @@ LAGS = [1, 2, 3, 6, 12, 24, 48, 72, 168]  # hours in the past to look back
 ROLL_WINDOWS = [24, 168]  # rolling mean/std windows (hours)
 TEST_FRACTION = 0.15  # last 15% of hours (chronological) held out for test
 
-
 # --------------------------------------------------------------------------
-# 1. Data loading
+# 1. Data loading (Strictly Local)
 # --------------------------------------------------------------------------
 def load_raw_minute_data(data_path: str | None) -> pd.DataFrame:
     """Return a minute-level DataFrame indexed by datetime with a
-    'Global_active_power' column (kW), NaNs where the source has '?'."""
+    'Global_active_power' column (kW). Requires a local file to be present."""
 
+    # 1. If an explicit path is provided, verify and load it
     if data_path is not None:
-        return _load_from_local_txt(data_path)
+        target_path = Path(data_path)
+        if not target_path.exists():
+            raise FileNotFoundError(f"Specified local data file not found: {data_path}")
+        print(f"Loading data from specified path: {data_path}")
+        return _load_from_local_txt(str(target_path))
 
-    # Try common local filenames first (fast path, no network needed).
-    for candidate in [
-        "household_power_consumption.txt"
-    ]:
-        if Path(candidate).exists():
-            print(f"Found local data file: {candidate}")
-            return _load_from_local_txt(candidate)
+    # 2. Otherwise, look for the default filename in the current directory
+    candidate = "household_power_consumption.txt"
+    if Path(candidate).exists():
+        print(f"Found local data file: {candidate}")
+        return _load_from_local_txt(candidate)
 
-    # Fall back to fetching via the UCI ML repo API.
-    try:
-        from ucimlrepo import fetch_ucirepo
-    except ImportError as e:
-        raise RuntimeError(
-            "ucimlrepo is not installed and no local data file was found. "
-            "Run `pip install ucimlrepo` or pass --data-path to a local "
-            "copy of household_power_consumption.txt"
-        ) from e
-
-    print("Fetching dataset from UCI ML repo (id=235)...")
-    dataset = fetch_ucirepo(id=235)
-    X = dataset.data.features.copy()
-    y = dataset.data.targets
-    if y is not None and len(y.columns) > 0:
-        X = pd.concat([X, y], axis=1)
-
-    return _finalize_raw_frame(X)
+    # 3. Fail immediately if no local file is found
+    raise FileNotFoundError(
+        f"Missing required dataset! Could not find '{candidate}' in the current directory, "
+        "and no --data-path argument was provided. Please download the file locally to run this script."
+    )
 
 
 def _load_from_local_txt(path: str) -> pd.DataFrame:
@@ -64,16 +53,15 @@ def _load_from_local_txt(path: str) -> pd.DataFrame:
 
 
 def _finalize_raw_frame(df: pd.DataFrame) -> pd.DataFrame:
-    if "Date" in df.columns and "Time" in df.columns:
-        dt = pd.to_datetime(
-            df["Date"].astype(str) + " " + df["Time"].astype(str),
-            format="%d/%m/%Y %H:%M:%S",
-            errors="coerce",
-        )
-    else:
-        # ucimlrepo sometimes already parses a single Datetime-like column
-        dt_col = [c for c in df.columns if "date" in c.lower()][0]
-        dt = pd.to_datetime(df[dt_col], errors="coerce")
+    # Since we only read local raw text files now, we strictly expect 'Date' and 'Time' columns
+    if "Date" not in df.columns or "Time" not in df.columns:
+        raise ValueError("The local dataset is missing required 'Date' or 'Time' columns.")
+
+    dt = pd.to_datetime(
+        df["Date"].astype(str) + " " + df["Time"].astype(str),
+        format="%d/%m/%Y %H:%M:%S",
+        errors="coerce",
+    )
 
     df = df.copy()
     df["datetime"] = dt
@@ -81,9 +69,8 @@ def _finalize_raw_frame(df: pd.DataFrame) -> pd.DataFrame:
 
     power_col = [c for c in df.columns if c.lower() == "global_active_power"][0]
     df["Global_active_power"] = pd.to_numeric(df[power_col], errors="coerce")
+    
     return df[["Global_active_power"]]
-
-
 # --------------------------------------------------------------------------
 # 2. Resample to hourly
 # --------------------------------------------------------------------------
