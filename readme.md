@@ -327,47 +327,32 @@ The proposed model achieves:
 These results indicate that the engineered lag features, rolling statistics, calendar information, and XGBoost's nonlinear learning capability substantially improve day-ahead household electricity load forecasting compared to simple persistence-based approaches.
 
 
-
 ## Overall Model Comparison
 
 Compares overall MAE of all forecasting methods.
 
-```
 ![Overall MAE](overall_mae_comparison.png)
-```
 
 ---
 
 ## Per-Horizon Forecast Error
 
-Shows forecasting error from
+Shows forecasting error from Hour 1 to Hour 24, demonstrating how prediction difficulty increases with forecasting horizon.
 
-Hour 1
-
-to
-
-Hour 24
-
-demonstrating how prediction difficulty increases with forecasting horizon.
-
-```
 ![Per Horizon MAE](per_horizon_mae.png)
-```
 
 ---
 
 ## Forecast Snapshot
 
-Visual comparison between
+Visual comparison between:
 
 - Actual household electricity consumption
 - Predicted 24-hour consumption
 
 for one forecasting origin.
 
-```
 ![Forecast Snapshot](forecast_snapshot.png)
-```
 
 ---
 
@@ -375,7 +360,7 @@ for one forecasting origin.
 
 Feature importance is computed by averaging the importance values across all 24 XGBoost models.
 
-Important predictors typically include
+Important predictors include:
 
 - Lag 24
 - Lag 168
@@ -388,12 +373,9 @@ Important predictors typically include
 - Weekend Indicator
 - Holiday Indicator
 
-```
 ![Feature Importance](feature_importance.png)
-```
 
 ---
-
 # Performance Highlights
 
 - Direct 24-hour forecasting
