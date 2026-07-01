@@ -333,7 +333,7 @@ These results indicate that the engineered lag features, rolling statistics, cal
 Compares overall MAE of all forecasting methods.
 
 ```
-overall_mae_comparison.png
+![Overall MAE](overall_mae_comparison.png)
 ```
 
 ---
@@ -351,7 +351,7 @@ Hour 24
 demonstrating how prediction difficulty increases with forecasting horizon.
 
 ```
-per_horizon_mae.png
+![Per Horizon MAE](per_horizon_mae.png)
 ```
 
 ---
@@ -366,7 +366,7 @@ Visual comparison between
 for one forecasting origin.
 
 ```
-forecast_snapshot.png
+![Forecast Snapshot](forecast_snapshot.png)
 ```
 
 ---
@@ -389,7 +389,7 @@ Important predictors typically include
 - Holiday Indicator
 
 ```
-feature_importance.png
+![Feature Importance](feature_importance.png)
 ```
 
 ---
