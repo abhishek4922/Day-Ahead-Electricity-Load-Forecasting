@@ -34,6 +34,15 @@ The dataset contains the following measurements:
 Only **Global Active Power** is used for forecasting household electricity demand.
 
 ---
+In addition to model development, this project demonstrates an end-to-end **MLOps workflow** including:
+
+- MLflow for experiment tracking
+- DVC for dataset versioning
+- Joblib for model serialization
+- FastAPI for model serving
+- GitHub Actions for continuous integration (CI)
+
+The pipeline is designed to be reproducible, modular, and suitable for production-oriented machine learning workflows.
 
 # Project Structure
 
@@ -41,12 +50,24 @@ Only **Global Active Power** is used for forecasting household electricity deman
 electricity-load-forecaster/
 │
 ├── main.py
-├── README.md
+├── api.py
+├── predict.py
 ├── requirements.txt
+├── README.md
+├── .gitignore
+│
+├── .github/
+│   └── workflows/
+│       └── train.yml
+│
+├── mlruns/
+├── models/
+├── .dvc/
+├── dvc.yaml
 │
 ├── overall_mae_comparison.png
-├── per_horizon_mae.png
 ├── feature_importance.png
+├── per_horizon_mae.png
 └── forecast_snapshot.png
 ```
 
@@ -426,6 +447,38 @@ O(H × T)
 ```
 
 ---
+# MLOps Workflow
+
+This project incorporates several MLOps practices to improve reproducibility, experiment management, and deployment readiness.
+- MLflow experiment tracking
+- DVC dataset versioning
+- Joblib model serialization
+- FastAPI inference API
+- GitHub Actions CI workflow
+- Reproducible machine learning pipeline
+## Experiment Tracking
+
+- MLflow is used to log:
+  - Hyperparameters
+  - Evaluation metrics (MAE and RMSE)
+  - Generated evaluation plots
+  - Training runs
+
+## Data Versioning
+
+- DVC is used to version the electricity consumption dataset without storing the dataset directly in GitHub.
+
+## Model Serialization
+
+- The trained XGBoost model is saved using Joblib for reuse during inference.
+
+## Model Serving
+
+- A FastAPI application exposes the trained model through a REST API for prediction.
+
+## Continuous Integration
+
+- GitHub Actions automatically validates the project on every push by installing dependencies and running project checks.
 
 # How to Run
 
@@ -446,19 +499,100 @@ Run using local dataset
 ```bash
 python main.py --data-path household_power_consumption.txt
 ```
+## MLflow Experiment Tracking
+
+Start the MLflow tracking UI:
+
+```bash
+mlflow ui
+```
+
+Open your browser and navigate to:
+
+```
+http://127.0.0.1:5000
+```
+
+The dashboard displays:
+
+- Training runs
+- Hyperparameters
+- MAE and RMSE
+- Generated evaluation plots
+
+## Run Prediction API
+
+Start the API server:
+
+```bash
+uvicorn api:app --reload
+```
+
+Open:
+
+```
+http://127.0.0.1:8000/docs
+```
+
+to access the interactive Swagger API documentation.
+## Data Versioning
+
+Initialize DVC:
+
+```bash
+dvc init
+```
+
+Track the dataset:
+
+```bash
+dvc add household_power_consumption.txt
+```
+
+Check dataset status:
+
+```bash
+dvc status
+```
+
+## Continuous Integration
+
+GitHub Actions automatically performs project validation whenever changes are pushed to the repository.
+
+The workflow includes:
+
+- Installing project dependencies
+- Verifying the codebase
+- Ensuring reproducibility
+    
 
 ---
 
+
+
 # Libraries Used
 
+### Machine Learning
 - Python
 - NumPy
 - Pandas
-- Matplotlib
 - Scikit-Learn
 - XGBoost
 - Holidays
-- UCI ML Repository (`ucimlrepo`)
+
+### Visualization
+- Matplotlib
+
+### MLOps
+- MLflow (Experiment Tracking)
+- DVC (Data Versioning)
+- Joblib (Model Serialization)
+- FastAPI (Model Serving)
+- Uvicorn (ASGI Server)
+
+### Development & CI
+- Git
+- GitHub Actions
 
 ---
 
@@ -513,5 +647,15 @@ Large utilities often combine machine learning with statistical forecasting and 
 - FastAPI deployment
 - Streamlit dashboard
 - Online model retraining
+## Future ops Improvements
+
+- Docker containerization
+- Kubernetes deployment
+- Prometheus monitoring
+- Grafana dashboards
+- Evidently AI for data and model drift detection
+- Automated retraining pipeline using Airflow
+- Cloud deployment on AWS or Azure
+- Model registry using MLflow
 
 ---

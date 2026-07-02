@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Model artifacts
+model.pkl
+*.joblib
+
+# MLflow
+mlruns/
+
+# DVC cache
+.dvc/cache/
+
+# Generated plots
+*.png
+
+# Dataset
+household_power_consumption.txt
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

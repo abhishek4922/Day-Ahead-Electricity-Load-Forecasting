@@ -5,3 +5,8 @@ scikit-learn==1.7.0
 xgboost==3.0.2
 holidays==0.76
 ucimlrepo==0.0.7
+mlflow
+dvc
+joblib
+fastapi
+uvicorn

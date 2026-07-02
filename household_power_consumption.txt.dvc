@@ -1,0 +1,5 @@
+outs:
+- md5: e05286cd4a257d80c3f0407b350df7dd
+  size: 132960755
+  hash: md5
+  path: household_power_consumption.txt

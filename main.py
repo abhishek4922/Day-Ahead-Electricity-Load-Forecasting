@@ -2,12 +2,14 @@ import argparse
 import sys
 import time
 from pathlib import Path
-
+import mlflow
+import mlflow.sklearn
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import xgboost as xgb
 from sklearn.multioutput import MultiOutputRegressor
+import joblib
 
 HORIZON = 24  # forecast the next 24 hours
 LAGS = [1, 2, 3, 6, 12, 24, 48, 72, 168]  # hours in the past to look back
@@ -15,7 +17,7 @@ ROLL_WINDOWS = [24, 168]  # rolling mean/std windows (hours)
 TEST_FRACTION = 0.15  # last 15% of hours (chronological) held out for test
 
 # --------------------------------------------------------------------------
-# 1. Data loading (Strictly Local)
+# 1. Data loading 
 # --------------------------------------------------------------------------
 def load_raw_minute_data(data_path: str | None) -> pd.DataFrame:
     """Return a minute-level DataFrame indexed by datetime with a
@@ -71,6 +73,7 @@ def _finalize_raw_frame(df: pd.DataFrame) -> pd.DataFrame:
     df["Global_active_power"] = pd.to_numeric(df[power_col], errors="coerce")
     
     return df[["Global_active_power"]]
+
 # --------------------------------------------------------------------------
 # 2. Resample to hourly
 # --------------------------------------------------------------------------
@@ -381,12 +384,46 @@ def main():
     parser.add_argument("--test-fraction", type=float, default=TEST_FRACTION)
     args, unknown = parser.parse_known_args()
 
+    # Step 1: Data prep pipeline
     minute_df = load_raw_minute_data(args.data_path)
     hourly = resample_hourly(minute_df)
     table, feature_cols, target_cols = build_supervised_table(hourly)
     train_df, test_df = chronological_split(table, args.test_fraction)
+
+    # Step 2: Train Model
     model = train_model(train_df, feature_cols, target_cols)
-    evaluate_all(test_df, target_cols, model, feature_cols, hourly)
+
+    # Step 3: Run Evaluation and generate figures
+    results = evaluate_all(test_df, target_cols, model, feature_cols, hourly)
+
+    # Step 4: Track with MLflow inside a single structured execution context
+    with mlflow.start_run():
+        mlflow.log_param("n_estimators", 150)
+        mlflow.log_param("max_depth", 6)
+        mlflow.log_param("learning_rate", 0.05)
+        mlflow.log_param("subsample", 0.8)
+        mlflow.log_param("colsample_bytree", 0.8)
+
+        # Log metrics
+        mlflow.log_metric("MAE", results["XGBoost (MultiOutput wrapper)"][0])
+        mlflow.log_metric("RMSE", results["XGBoost (MultiOutput wrapper)"][1])
+
+        # Log the generated plot artifacts
+        mlflow.log_artifact("overall_mae_comparison.png")
+        mlflow.log_artifact("feature_importance.png")
+        mlflow.log_artifact("forecast_snapshot.png")
+        mlflow.log_artifact("per_horizon_mae.png")
+
+        # Log the trained multioutput wrapper cleanly via MLflow Sklearn API
+        mlflow.sklearn.log_model(
+    model, 
+    artifact_path="xgb_multioutput_model", 
+    serialization_format="pickle"
+)
+
+    # Local fallback save 
+    joblib.dump(model, "model.pkl")
+    print("Pipeline complete. Model saved locally to 'model.pkl' and tracked in MLflow.")
 
 
 if __name__ == "__main__":

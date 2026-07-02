@@ -1,0 +1,23 @@
+artifact_path: file:C:/Users/abhis/Desktop/Projects/web/aiops/wog/assign/mlruns/0/models/m-6bd73ad1c482495b87b19e58ebc4ee48/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.13.1
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: pickle
+    sklearn_version: 1.7.0
+    skops_trusted_types: null
+mlflow_version: 3.14.0
+model_id: m-6bd73ad1c482495b87b19e58ebc4ee48
+model_size_bytes: 16831339
+model_uuid: m-6bd73ad1c482495b87b19e58ebc4ee48
+prompts: null
+run_id: 5dfe47172978451c9ab77a92ee9021ef
+utc_time_created: '2026-07-02 04:11:47.281640'
