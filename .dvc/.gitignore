@@ -21,9 +21,6 @@ mlruns/
 # DVC cache
 .dvc/cache/
 
-# Generated plots
-*.png
-
 # Dataset
 household_power_consumption.txt
 
